@@ -26,10 +26,9 @@ public class AuthService {
         User user = new User();
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
-        user.setRole(role != null ? role : "USER"); // use input if provided
+        user.setRole(role != null ? role : "USER");
         return userRepository.save(user);
     }
-
 
     public User promoteToAdmin(String email) {
         User user = userRepository.findByEmail(email)

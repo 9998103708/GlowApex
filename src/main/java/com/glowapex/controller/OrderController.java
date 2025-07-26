@@ -6,13 +6,14 @@ import com.glowapex.entity.OrderStatus;
 import com.glowapex.entity.User;
 import com.glowapex.repository.OrderRepository;
 import com.glowapex.repository.UserRepository;
+import com.glowapex.service.AuthService;
 import com.glowapex.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.SecureRandom;
@@ -30,23 +31,20 @@ public class OrderController {
     private UserRepository userRepository;
 
     @Autowired
-    private EmailService emailService;
+    private AuthService authService;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private EmailService emailService;
 
-    // ✅ Place Order – Creates user if not exists
     @PostMapping("/place")
     public Order placeOrder(@RequestBody OrderRequest request) {
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
 
+        String rawPassword = null;
+
         if (user == null) {
-            user = new User();
-            user.setEmail(request.getEmail());
-            String rawPassword = generateRandomPassword();
-            user.setPassword(passwordEncoder.encode(rawPassword));
-            user.setRole("USER");
-            user = userRepository.save(user);
+            rawPassword = generateRandomPassword();
+            user = authService.register(request.getEmail(), rawPassword, "USER");
             emailService.sendCredentials(request.getEmail(), rawPassword);
         }
 
@@ -59,23 +57,18 @@ public class OrderController {
         return orderRepository.save(order);
     }
 
-    // Logged-in USER can view their own orders
     @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/myOrder")
-    public List<Order> getUserOrders() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) auth.getPrincipal();
-        return orderRepository.findByUserId(currentUser.getId());
+    public List<Order> getUserOrders(@AuthenticationPrincipal User user) {
+        return orderRepository.findByUserId(user.getId());
     }
 
-    // Admin can view all orders
     @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/allOrders")
+    @GetMapping("/allOrder")
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
 
-    // ✅ Admin can update order status
     @PutMapping("/update-status/{orderId}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public Order updateStatus(@PathVariable Long orderId, @RequestParam OrderStatus status) {
@@ -85,7 +78,6 @@ public class OrderController {
         return orderRepository.save(order);
     }
 
-    // ✅ Authenticated USER or ADMIN can cancel their order
     @PutMapping("/cancel/{orderId}")
     @PreAuthorize("isAuthenticated()")
     public Order cancelOrder(@PathVariable Long orderId) {
@@ -103,7 +95,6 @@ public class OrderController {
         return orderRepository.save(order);
     }
 
-    // ✅ Utility to generate a secure random password
     private String generateRandomPassword() {
         byte[] randomBytes = new byte[6];
         new SecureRandom().nextBytes(randomBytes);
