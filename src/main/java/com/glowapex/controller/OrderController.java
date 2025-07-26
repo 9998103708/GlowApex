@@ -5,15 +5,12 @@ import com.glowapex.entity.Order;
 import com.glowapex.entity.OrderStatus;
 import com.glowapex.entity.User;
 import com.glowapex.repository.OrderRepository;
-import com.glowapex.repository.UserRepository;
 import com.glowapex.service.AuthService;
 import com.glowapex.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.SecureRandom;
@@ -28,9 +25,6 @@ public class OrderController {
     private OrderRepository orderRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private AuthService authService;
 
     @Autowired
@@ -38,12 +32,11 @@ public class OrderController {
 
     @PostMapping("/place")
     public Order placeOrder(@RequestBody OrderRequest request) {
-        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        User user = authService.getUserByEmail(request.getEmail());
 
-        String rawPassword = null;
-
+        // If user doesn't exist → create & email credentials
         if (user == null) {
-            rawPassword = generateRandomPassword();
+            String rawPassword = generateRandomPassword();
             user = authService.register(request.getEmail(), rawPassword, "USER");
             emailService.sendCredentials(request.getEmail(), rawPassword);
         }
@@ -57,12 +50,14 @@ public class OrderController {
         return orderRepository.save(order);
     }
 
+    // User can view own orders
     @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/myOrder")
     public List<Order> getUserOrders(@AuthenticationPrincipal User user) {
         return orderRepository.findByUserId(user.getId());
     }
 
+    // Admin can view all orders
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/allOrder")
     public List<Order> getAllOrders() {
@@ -80,10 +75,8 @@ public class OrderController {
 
     @PutMapping("/cancel/{orderId}")
     @PreAuthorize("isAuthenticated()")
-    public Order cancelOrder(@PathVariable Long orderId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) auth.getPrincipal();
-
+    public Order cancelOrder(@AuthenticationPrincipal User currentUser,
+                             @PathVariable Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 

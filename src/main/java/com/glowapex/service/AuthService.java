@@ -36,4 +36,9 @@ public class AuthService {
         user.setRole("ADMIN");
         return userRepository.save(user);
     }
+
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null);
+    }
+
 }
