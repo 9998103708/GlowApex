@@ -12,6 +12,7 @@ com\glowapex\entity\Order.class
 com\glowapex\repository\UserRepository.class
 com\glowapex\dto\RegisterRequest.class
 com\glowapex\entity\OrderStatus.class
+com\glowapex\controller\HomeController.class
 com\glowapex\config\JwtAuthenticationFilter.class
 com\glowapex\config\JwtUtil.class
 com\glowapex\dto\PasswordChangeRequest.class
