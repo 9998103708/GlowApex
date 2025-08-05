@@ -1,6 +1,7 @@
 package com.glowapex.entity;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -20,6 +21,16 @@ public class User {
     private String role; // "USER" or "ADMIN"
 
     private boolean active = true;
+
+    // 🔐 OTP-related fields
+    @Column(name = "otp")
+    private String otp;
+
+    @Column(name = "otp_expiry")
+    private LocalDateTime otpExpiry;
+
+    @Column(name = "otp_verified")
+    private Boolean otpVerified = false;
 
     // Getters and Setters
     public Long getId() {
@@ -60,5 +71,29 @@ public class User {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
+    }
+
+    public LocalDateTime getOtpExpiry() {
+        return otpExpiry;
+    }
+
+    public void setOtpExpiry(LocalDateTime otpExpiry) {
+        this.otpExpiry = otpExpiry;
+    }
+
+    public Boolean getOtpVerified() {
+        return otpVerified;
+    }
+
+    public void setOtpVerified(Boolean otpVerified) {
+        this.otpVerified = otpVerified;
     }
 }

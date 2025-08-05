@@ -1,12 +1,15 @@
 com\glowapex\entity\Payment.class
 com\glowapex\controller\UserController.class
 com\glowapex\dto\OrderRequest.class
+com\glowapex\dto\OtpRequest.class
 com\glowapex\dto\LoginRequest.class
+com\glowapex\service\OtpService$OtpData.class
 com\glowapex\controller\AuthController.class
 com\glowapex\controller\OrderController.class
 com\glowapex\repository\PaymentRepository.class
 com\glowapex\entity\User.class
 com\glowapex\dto\PromoteRequest.class
+com\glowapex\dto\EmailRequest.class
 com\glowapex\dto\AuthResponse.class
 com\glowapex\entity\Order.class
 com\glowapex\repository\UserRepository.class
@@ -22,5 +25,6 @@ com\glowapex\service\AuthService.class
 com\glowapex\dto\PaymentRequest.class
 com\glowapex\controller\AdminController.class
 com\glowapex\repository\OrderRepository.class
+com\glowapex\service\OtpService.class
 com\glowapex\GlowApexApplication.class
 com\glowapex\config\SecurityConfig.class
