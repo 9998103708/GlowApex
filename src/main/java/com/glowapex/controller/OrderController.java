@@ -1,13 +1,12 @@
 package com.glowapex.controller;
 
 import com.glowapex.dto.OrderRequest;
-import com.glowapex.entity.Order;
-import com.glowapex.entity.OrderStatus;
-import com.glowapex.entity.User;
+import com.glowapex.entity.*;
 import com.glowapex.repository.OrderRepository;
 import com.glowapex.service.AuthService;
 import com.glowapex.service.EmailService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.glowapex.service.ServiceProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,53 +18,69 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
+@RequiredArgsConstructor
 public class OrderController {
 
-    @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
-    private AuthService authService;
-
-    @Autowired
-    private EmailService emailService;
+    private final OrderRepository orderRepository;
+    private final AuthService authService;
+    private final EmailService emailService;
+    private final ServiceProductService serviceProductService;
 
     @PostMapping("/place")
     public Order placeOrder(@RequestBody OrderRequest request) {
-        User user = authService.getUserByEmail(request.getEmail());
+        // 1. Validate service
+        ServiceProduct product = serviceProductService.findEntityByServiceName(request.getServiceName());
+        if (product == null) {
+            throw new RuntimeException("Selected service does not exist.");
+        }
 
-        // If user doesn't exist → create & email credentials
+        // 2. Validate package
+        ServicePackage matchedPackage = product.getPackages().stream()
+                .filter(p -> p.getName().equalsIgnoreCase(request.getPackageName()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Selected package is invalid."));
+
+        // 3. Validate quantity
+        PackageQuantity matchedQuantity = matchedPackage.getQuantities().stream()
+                .filter(q -> q.getAmount() == request.getQuantity())
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Selected quantity is not available."));
+
+        // 4. Auto-create user if not found
+        User user = authService.getUserByEmail(request.getEmail());
         if (user == null) {
             String rawPassword = generateRandomPassword();
             user = authService.register(request.getEmail(), rawPassword, "USER");
             emailService.sendCredentials(request.getEmail(), rawPassword);
         }
 
+        // 5. Create order
         Order order = new Order();
         order.setUser(user);
-        order.setServiceName(request.getServiceName());
-        order.setQuantity(request.getQuantity());
-        order.setPrice(request.getPrice());
+        order.setServiceName(product.getServiceName());
+        order.setPackageName(matchedPackage.getName());
+        order.setQuantity(matchedQuantity.getAmount());
+        order.setPrice(matchedQuantity.getPrice());
+        order.setStatus(OrderStatus.PENDING);
+        order.setLink(request.getLink());
 
         return orderRepository.save(order);
     }
 
-    // User can view own orders
     @PreAuthorize("hasAuthority('USER')")
     @GetMapping("/myOrder")
     public List<Order> getUserOrders(@AuthenticationPrincipal User user) {
         return orderRepository.findByUserId(user.getId());
     }
 
-    // Admin can view all orders
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/allOrder")
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
 
-    @PutMapping("/update-status/{orderId}")
     @PreAuthorize("hasAuthority('ADMIN')")
+    @PutMapping("/update-status/{orderId}")
     public Order updateStatus(@PathVariable Long orderId, @RequestParam OrderStatus status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
@@ -73,8 +88,8 @@ public class OrderController {
         return orderRepository.save(order);
     }
 
-    @PutMapping("/cancel/{orderId}")
     @PreAuthorize("isAuthenticated()")
+    @PutMapping("/cancel/{orderId}")
     public Order cancelOrder(@AuthenticationPrincipal User currentUser,
                              @PathVariable Long orderId) {
         Order order = orderRepository.findById(orderId)

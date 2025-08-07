@@ -9,27 +9,16 @@ import org.springframework.stereotype.Service;
 public class EmailService {
 
     private static final String FROM_EMAIL = "glowapex81@gmail.com";
-    private static final String CREDENTIALS_SUBJECT = "Your account has been created";
-    private static final String OTP_SUBJECT = "Your Login OTP Code";
+    private static final String CREDENTIALS_SUBJECT = "Your GlowApex Account Details";
+    private static final String OTP_SUBJECT = "Your GlowApex OTP Code";
 
     @Autowired
     private JavaMailSender mailSender;
 
-    public void sendCredentials(String toEmail, String password) {
-        String body = "Welcome!\n\nYour account has been created.\n\nUsername: " + toEmail +
-                "\nPassword: " + password + "\n\nPlease log in and change your password.";
-        sendSimpleEmail(toEmail, CREDENTIALS_SUBJECT, body);
-        System.out.println("Credentials email sent to: " + toEmail);
-    }
-
-    public void sendOtpEmail(String toEmail, String otp) {
-        String body = "Your OTP is: " + otp + "\n\nThis OTP is valid for 5 minutes.\n\n" +
-                "If you didn’t request this, please ignore this email.";
-        sendSimpleEmail(toEmail, OTP_SUBJECT, body);
-        System.out.println("OTP email sent to: " + toEmail);
-    }
-
-    private void sendSimpleEmail(String toEmail, String subject, String body) {
+    /**
+     * Sends a custom email with a given subject and body.
+     */
+    public void sendEmail(String toEmail, String subject, String body) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(FROM_EMAIL);
@@ -37,8 +26,48 @@ public class EmailService {
             message.setSubject(subject);
             message.setText(body);
             mailSender.send(message);
+            System.out.println("Email sent to: " + toEmail);
         } catch (Exception e) {
             System.err.println("Failed to send email to " + toEmail + ": " + e.getMessage());
         }
+    }
+
+    /**
+     * Sends credentials to a newly registered user.
+     */
+    public void sendCredentials(String toEmail, String password) {
+        String body = String.format("""
+                Welcome to GlowApex!
+                
+                Your account has been successfully created.
+                
+                Login Email: %s
+                Temporary Password: %s
+                
+                Please log in and change your password immediately for security.
+                
+                Regards,
+                GlowApex Team
+                """, toEmail, password);
+
+        sendEmail(toEmail, CREDENTIALS_SUBJECT, body);
+    }
+
+    /**
+     * Sends a login OTP to the user.
+     */
+    public void sendOtpEmail(String toEmail, String otp) {
+        String body = String.format("""
+                Your GlowApex Login OTP is: %s
+                
+                This OTP is valid for 5 minutes.
+                
+                If you did not request this, please ignore this email.
+                
+                Regards,
+                GlowApex Team
+                """, otp);
+
+        sendEmail(toEmail, OTP_SUBJECT, body);
     }
 }
