@@ -2,19 +2,20 @@ package com.glowapex.service;
 
 import com.glowapex.dto.OrderRequest;
 import com.glowapex.entity.Order;
-import com.glowapex.entity.OrderStatus;
-import com.glowapex.entity.User;
 
 import java.util.List;
 
 public interface OrderService {
-    Order placeOrder(OrderRequest request);
 
-    List<Order> getOrdersByEmail(String email);
+    Order createOrder(OrderRequest request);
+
+    Order getOrderById(Long id);
 
     List<Order> getAllOrders();
 
-    Order updateOrderStatus(Long orderId, OrderStatus status);
+    Order updateOrder(Long id, OrderRequest request);
 
-    Order cancelOrder(Long orderId, User currentUser);
+    void deleteOrder(Long id);
+
+    List<Order> getOrdersByUserEmail(String email);
 }

@@ -16,7 +16,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
-@PreAuthorize("hasAuthority('ADMIN')")
 public class AdminController {
 
     @Autowired
@@ -28,6 +27,7 @@ public class AdminController {
     @Autowired
     private PaymentRepository paymentRepository;
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/stats")
     public Map<String, Object> getStats() {
         Map<String, Object> stats = new HashMap<>();
@@ -37,6 +37,7 @@ public class AdminController {
         return stats;
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/users")
     public List<User> getAllUsers() {
         return userRepository.findAll();
