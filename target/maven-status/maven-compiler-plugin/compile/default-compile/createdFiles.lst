@@ -23,7 +23,6 @@ com\glowapex\controller\PaymentController.class
 com\glowapex\service\EmailService.class
 com\glowapex\service\AuthService.class
 com\glowapex\dto\PaymentRequest.class
-com\glowapex\service\OrderService.class
 com\glowapex\controller\AdminController.class
 com\glowapex\repository\OrderRepository.class
 com\glowapex\service\OtpService.class

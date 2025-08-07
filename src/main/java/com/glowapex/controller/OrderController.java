@@ -87,12 +87,13 @@ public class OrderController {
     }
 
     // ✅ Authenticated USER or ADMIN can cancel their order
-
     @PutMapping("/cancel/{orderId}")
     @PreAuthorize("isAuthenticated()")
     public Order cancelOrder(@PathVariable Long orderId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
         User currentUser = (User) auth.getPrincipal();
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
@@ -103,8 +104,8 @@ public class OrderController {
         order.setStatus(OrderStatus.CANCELLED);
         return orderRepository.save(order);
     }
-    // ✅ Utility to generate a secure random password
 
+    // ✅ Utility to generate a secure random password
     private String generateRandomPassword() {
         byte[] randomBytes = new byte[6];
         new SecureRandom().nextBytes(randomBytes);
