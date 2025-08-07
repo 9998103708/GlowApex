@@ -34,7 +34,7 @@ public class ServiceManagementService {
             p.setService(entity);
 
             List<PackageQuantityEntity> quantityEntities = new ArrayList<>();
-            for (PackageQuantityDTO q : pkg.getQuantities()) {
+            for (PackageQuantityDTO q : pkg.getQuantities()) { // ✅ updated to match DTO field
                 PackageQuantityEntity qe = new PackageQuantityEntity();
                 qe.setAmount(q.getAmount());
                 qe.setPrice(q.getPrice());

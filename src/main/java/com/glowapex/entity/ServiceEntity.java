@@ -6,17 +6,26 @@ import java.util.List;
 @Entity
 @Table(name = "services")
 public class ServiceEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String providerServiceId;
+
     private String name;
+
     private String description;
-    private String features;
+
+    @ElementCollection
+    @CollectionTable(name = "service_features", joinColumns = @JoinColumn(name = "service_id"))
+    @Column(name = "feature")
+    private List<String> features;
 
     @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PackageEntity> packages;
+
+    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -50,11 +59,11 @@ public class ServiceEntity {
         this.description = description;
     }
 
-    public String getFeatures() {
+    public List<String> getFeatures() {
         return features;
     }
 
-    public void setFeatures(String features) {
+    public void setFeatures(List<String> features) {
         this.features = features;
     }
 
@@ -64,5 +73,12 @@ public class ServiceEntity {
 
     public void setPackages(List<PackageEntity> packages) {
         this.packages = packages;
+
+        // Set this service reference in each package (IMPORTANT!)
+        if (packages != null) {
+            for (PackageEntity p : packages) {
+                p.setService(this);
+            }
+        }
     }
 }
