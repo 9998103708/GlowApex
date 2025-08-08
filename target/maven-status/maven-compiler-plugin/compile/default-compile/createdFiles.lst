@@ -8,6 +8,7 @@ com\glowapex\dto\OtpRequest.class
 com\glowapex\dto\LoginRequest.class
 com\glowapex\entity\PackageQuantityEntity.class
 com\glowapex\service\OtpService$OtpData.class
+com\glowapex\exception\JwtAuthenticationException.class
 com\glowapex\controller\AuthController.class
 com\glowapex\controller\OrderController.class
 com\glowapex\repository\PaymentRepository.class
@@ -23,6 +24,7 @@ com\glowapex\dto\RegisterRequest.class
 com\glowapex\entity\OrderStatus.class
 com\glowapex\controller\HomeController.class
 com\glowapex\config\JwtAuthenticationFilter.class
+com\glowapex\exception\GlobalExceptionHandler.class
 com\glowapex\config\JwtUtil.class
 com\glowapex\dto\PasswordChangeRequest.class
 com\glowapex\dto\ServiceDTO.class
