@@ -1,11 +1,11 @@
 package com.glowapex.config;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletResponse;
-import com.glowapex.exception.JwtAuthenticationException;
 import java.util.Date;
 
 @Component
@@ -27,27 +27,15 @@ public class JwtUtil {
     }
 
     public String getEmailFromToken(String token) {
-        try {
-            return Jwts.parser()
-                    .setSigningKey(jwtSecret)
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject();
-        } catch (ExpiredJwtException e) {
-            throw new JwtAuthenticationException("JWT token is expired", HttpServletResponse.SC_UNAUTHORIZED);
-        } catch (JwtException | IllegalArgumentException e) {
-            throw new JwtAuthenticationException("Invalid JWT token", HttpServletResponse.SC_UNAUTHORIZED);
-        }
+        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
     }
 
     public boolean validateToken(String token) {
         try {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
             return true;
-        } catch (ExpiredJwtException e) {
-            throw new JwtAuthenticationException("JWT token is expired", HttpServletResponse.SC_UNAUTHORIZED);
         } catch (JwtException | IllegalArgumentException e) {
-            throw new JwtAuthenticationException("Invalid JWT token", HttpServletResponse.SC_UNAUTHORIZED);
+            return false;
         }
     }
 }

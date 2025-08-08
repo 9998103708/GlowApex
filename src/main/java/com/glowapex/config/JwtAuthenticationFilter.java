@@ -1,7 +1,6 @@
 package com.glowapex.config;
 
 import com.glowapex.entity.User;
-import com.glowapex.exception.JwtAuthenticationException;
 import com.glowapex.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,31 +33,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new JwtAuthenticationException("JWT token is missing", HttpServletResponse.SC_UNAUTHORIZED);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            if (jwtUtil.validateToken(token)) {
+                String email = jwtUtil.getEmailFromToken(token);
+                User user = userRepository.findByEmail(email).orElse(null);
+                if (user != null) {
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    user,
+                                    null,
+                                    Collections.singletonList(new SimpleGrantedAuthority(user.getRole()))
+                            );
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            }
         }
-
-        String token = authHeader.substring(7);
-
-        if (!jwtUtil.validateToken(token)) {
-            throw new JwtAuthenticationException("JWT token is expired or invalid", HttpServletResponse.SC_UNAUTHORIZED);
-        }
-
-        String email = jwtUtil.getEmailFromToken(token);
-        User user = userRepository.findByEmail(email).orElse(null);
-
-        if (user == null) {
-            throw new JwtAuthenticationException("User not found for the provided token", HttpServletResponse.SC_UNAUTHORIZED);
-        }
-
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(
-                        user,
-                        null,
-                        Collections.singletonList(new SimpleGrantedAuthority(user.getRole()))
-                );
-        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         filterChain.doFilter(request, response);
     }
