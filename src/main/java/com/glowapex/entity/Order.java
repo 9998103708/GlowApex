@@ -1,6 +1,7 @@
 package com.glowapex.entity;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,6 +19,7 @@ public class Order {
     private String serviceName;
     private int quantity;
     private double price;
+    private BigDecimal totalAmount;
 
     private LocalDateTime orderTime = LocalDateTime.now();
 
@@ -78,5 +80,13 @@ public class Order {
 
     public void setStatus(OrderStatus status) {
         this.status = status;
+    }
+
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
     }
 }
