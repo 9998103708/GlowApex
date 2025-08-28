@@ -1,0 +1,28 @@
+# Maven target directory
+/target/
+
+# Maven local repository (wrapper JAR should NOT be ignored)
+/.mvn/
+/.mvn/wrapper/maven-wrapper.jar
+
+# Eclipse / IntelliJ files
+/.idea/
+/*.iml
+/.classpath
+/.project
+/.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment / secrets
+.env
+application.properties
+application.yml
+
+# Generated JARs
+*.jar
