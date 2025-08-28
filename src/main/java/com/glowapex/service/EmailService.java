@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-    private static final String FROM_EMAIL = "glowapex81@gmail.com";
+    private static final String FROM_EMAIL = "theopenfoood@gmail.com";
     private static final String CREDENTIALS_SUBJECT = "Your GlowApex Account Details";
     private static final String OTP_SUBJECT = "Your GlowApex OTP Code";
 
