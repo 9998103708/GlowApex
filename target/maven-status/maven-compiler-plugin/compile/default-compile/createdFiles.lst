@@ -5,7 +5,6 @@ com\glowapex\repository\ProviderServiceRepository.class
 com\glowapex\dto\OrderRequest.class
 com\glowapex\dto\OtpRequest.class
 com\glowapex\dto\LoginRequest.class
-com\glowapex\service\OtpService$OtpData.class
 com\glowapex\exception\JwtAuthenticationException.class
 com\glowapex\controller\AuthController.class
 com\glowapex\controller\OrderController.class
@@ -15,12 +14,14 @@ com\glowapex\dto\PromoteRequest.class
 com\glowapex\entity\ProviderService.class
 com\glowapex\dto\EmailRequest.class
 com\glowapex\dto\AuthResponse.class
+com\glowapex\repository\OtpRepository.class
 com\glowapex\entity\Order.class
 com\glowapex\repository\UserRepository.class
 com\glowapex\dto\RegisterRequest.class
 com\glowapex\entity\OrderStatus.class
 com\glowapex\controller\HomeController.class
 com\glowapex\config\JwtAuthenticationFilter.class
+com\glowapex\entity\OtpEntity.class
 com\glowapex\exception\GlobalExceptionHandler.class
 com\glowapex\exception\OtpInvalidException.class
 com\glowapex\config\JwtUtil.class
@@ -30,6 +31,7 @@ com\glowapex\service\EmailService.class
 com\glowapex\service\AuthService.class
 com\glowapex\exception\OtpExpiredException.class
 com\glowapex\dto\PaymentRequest.class
+com\glowapex\service\OtpCleanupService.class
 com\glowapex\entity\ServicePackage.class
 com\glowapex\controller\AdminController.class
 com\glowapex\repository\OrderRepository.class
