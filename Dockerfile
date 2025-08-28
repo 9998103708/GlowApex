@@ -8,7 +8,7 @@ ENV JAVA_OPTS=""
 WORKDIR /app
 
 # Copy the built jar file into the container
-COPY target/glow-apex-admin-0.0.1-SNAPSHOT.jar app.jar
+COPY target/glow-apex-admin-1.0.0.jar app.jar
 
 # Expose the port that Cloud Run will use
 EXPOSE 8080
