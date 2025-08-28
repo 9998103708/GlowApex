@@ -1,28 +1,23 @@
-# Maven target directory
+# Ignore build output
 /target/
+*.jar
 
-# Maven local repository (wrapper JAR should NOT be ignored)
-/.mvn/
-/.mvn/wrapper/maven-wrapper.jar
+# Maven specific
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
 
-# Eclipse / IntelliJ files
+# IntelliJ IDEA
 /.idea/
 /*.iml
-/.classpath
-/.project
-/.settings/
-
-# OS files
-.DS_Store
-Thumbs.db
 
 # Logs
 *.log
 
-# Environment / secrets
-.env
+# Environment files
+*.env
 application.properties
 application.yml
 
-# Generated JARs
-*.jar
+# OS files
+.DS_Store
+Thumbs.db
