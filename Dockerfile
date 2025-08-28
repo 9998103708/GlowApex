@@ -1,33 +1,21 @@
-# -------------------
-# 1. Build Stage
-# -------------------
-FROM maven:3.9.6-eclipse-temurin-17 AS builder
+# Use official OpenJDK 17 runtime as a parent image
+FROM eclipse-temurin:17-jdk-jammy
 
-# Set working directory inside container
+# Set environment variables for Cloud Run
+ENV JAVA_OPTS=""
+
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy pom.xml and download dependencies (layer caching)
-COPY pom.xml .
-RUN mvn dependency:go-offline -B
+# Copy the built jar file into the container
+COPY target/glow-apex-admin-0.0.1-SNAPSHOT.jar app.jar
 
-# Copy source code
-COPY src ./src
-
-# Package the application (skip tests for faster build)
-RUN mvn clean package -DskipTests
-
-# -------------------
-# 2. Run Stage
-# -------------------
-FROM eclipse-temurin:17-jdk AS runtime
-
-WORKDIR /app
-
-# Copy built jar from builder stage
-COPY --from=builder /app/target/*.jar app.jar
-
-# Expose port (default Spring Boot port)
+# Expose the port that Cloud Run will use
 EXPOSE 8080
 
-# Run the app
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Use a non-root user for security
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+USER appuser
+
+# Run the Spring Boot application
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=$PORT -jar /app/app.jar"]
