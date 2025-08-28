@@ -1,50 +1,57 @@
 package com.glowapex.service;
 
+import com.glowapex.entity.OtpEntity;
+import com.glowapex.repository.OtpRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 @Service
 public class OtpService {
 
-    private final Map<String, OtpData> otpStorage = new HashMap<>();
+    @Autowired
+    private OtpRepository otpRepository;
 
     @Autowired
     private EmailService emailService;
 
+    // Generate and send OTP
     public void generateAndSendOtp(String email) {
+        // Generate 6-digit OTP
         String otp = String.format("%06d", new Random().nextInt(999999));
-        otpStorage.put(email, new OtpData(otp, LocalDateTime.now().plusMinutes(5)));
-        emailService.sendOtpEmail(email, otp);
-        System.out.println("OTP generated and sent to: " + email + " | OTP: " + otp); // Debug only
+
+        // Set expiry 5 minutes
+        LocalDateTime expiry = LocalDateTime.now().plusMinutes(5);
+
+        // Save OTP in DB (overwrite if exists)
+        otpRepository.findByEmail(email)
+                .ifPresent(existing -> otpRepository.delete(existing));
+
+        otpRepository.save(new OtpEntity(email, otp, expiry));
+
+        // Send email via SendGrid
+        String subject = "Your GlowApex OTP Code";
+        String body = "Dear user,\n\nYour OTP code is: " + otp +
+                "\nIt is valid for 5 minutes.\n\n" +
+                "Regards,\nGlowApex Team";
+
+        emailService.sendEmail(email, subject, body);
     }
 
+    // Verify OTP
     public boolean verifyOtp(String email, String otp) {
-        OtpData data = otpStorage.get(email);
-        if (data == null) return false;
-        if (data.getExpiry().isBefore(LocalDateTime.now())) return false;
-        return data.getOtp().equals(otp);
-    }
-
-    private static class OtpData {
-        private final String otp;
-        private final LocalDateTime expiry;
-
-        public OtpData(String otp, LocalDateTime expiry) {
-            this.otp = otp;
-            this.expiry = expiry;
-        }
-
-        public String getOtp() {
-            return otp;
-        }
-
-        public LocalDateTime getExpiry() {
-            return expiry;
-        }
+        return otpRepository.findByEmail(email)
+                .map(otpEntity -> {
+                    if (otpEntity.getExpiry().isBefore(LocalDateTime.now())) {
+                        otpRepository.delete(otpEntity); // Remove expired OTP
+                        return false;
+                    }
+                    boolean valid = otpEntity.getOtp().equals(otp);
+                    if (valid) otpRepository.delete(otpEntity); // Remove used OTP
+                    return valid;
+                })
+                .orElse(false);
     }
 }

@@ -1,33 +1,48 @@
 package com.glowapex.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 
 @Service
 public class EmailService {
 
-    private static final String FROM_EMAIL = "sparklt.events@gmail.com";
     private static final String CREDENTIALS_SUBJECT = "Your GlowApex Account Details";
     private static final String OTP_SUBJECT = "Your GlowApex OTP Code";
-
-    @Autowired
-    private JavaMailSender mailSender;
+    @Value("${sendgrid.api.key}")
+    private String sendGridApiKey;
+    @Value("${sendgrid.from.email}")
+    private String fromEmail;
 
     /**
-     * Sends a custom email with a given subject and body.
+     * Sends a custom email with a given subject and body using SendGrid API.
      */
     public void sendEmail(String toEmail, String subject, String body) {
+        Email from = new Email(fromEmail);
+        Email to = new Email(toEmail);
+        Content content = new Content("text/plain", body);
+        Mail mail = new Mail(from, subject, to, content);
+
+        SendGrid sg = new SendGrid(sendGridApiKey);
+        Request request = new Request();
+
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(FROM_EMAIL);
-            message.setTo(toEmail);
-            message.setSubject(subject);
-            message.setText(body);
-            mailSender.send(message);
-            System.out.println("Email sent to: " + toEmail);
-        } catch (Exception e) {
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            Response response = sg.api(request);
+
+            System.out.println("Email sent to: " + toEmail +
+                    " | Status: " + response.getStatusCode());
+        } catch (IOException e) {
             throw new RuntimeException("Failed to send email to " + toEmail, e);
         }
     }
