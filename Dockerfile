@@ -11,4 +11,4 @@ COPY target/glow-apex-admin-1.0.0.jar app.jar
 EXPOSE 8080
 
 # Run the jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+ENTRYPOINT ["java","-jar","/app/app.jar"]
