@@ -1,5 +1,6 @@
 package com.glowapex.service;
 
+import com.glowapex.entity.Role;
 import com.glowapex.entity.User;
 import com.glowapex.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,15 +27,14 @@ public class AuthService {
         User user = new User();
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
-        user.setRole(role != null ? role : "USER"); // use input if provided
+        user.setRole(role != null && role.equalsIgnoreCase("ADMIN") ? Role.ADMIN : Role.USER);
         return userRepository.save(user);
     }
-
 
     public User promoteToAdmin(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setRole("ADMIN");
+        user.setRole(Role.ADMIN);
         return userRepository.save(user);
     }
 }

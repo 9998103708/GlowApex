@@ -1,9 +1,7 @@
 package com.glowapex.controller;
 
-import com.glowapex.entity.User;
-import com.glowapex.repository.OrderRepository;
-import com.glowapex.repository.PaymentRepository;
-import com.glowapex.repository.UserRepository;
+import com.glowapex.dto.UserProfileDTO;
+import com.glowapex.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,27 +17,23 @@ import java.util.Map;
 public class AdminController {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
-    @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
-    private PaymentRepository paymentRepository;
-
-    @PreAuthorize("hasAuthority('ADMIN')")
+    // ADMIN + SUPERADMIN can view stats
+    @PreAuthorize("hasAnyAuthority('ADMIN','SUPERADMIN')")
     @GetMapping("/stats")
     public Map<String, Object> getStats() {
         Map<String, Object> stats = new HashMap<>();
-        stats.put("totalUsers", userRepository.count());
-        stats.put("totalOrders", orderRepository.count());
-        stats.put("totalPayments", paymentRepository.count());
+        stats.put("totalUsers", userService.getAllUsersCount());
+        stats.put("totalOrders", userService.getAllOrdersCount());
+        stats.put("totalPayments", userService.getAllPaymentsCount());
         return stats;
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    // ADMIN + SUPERADMIN can view all users
+    @PreAuthorize("hasAnyAuthority('ADMIN','SUPERADMIN')")
     @GetMapping("/users")
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserProfileDTO> getAllUsers() {
+        return userService.getAllUsers();
     }
 }

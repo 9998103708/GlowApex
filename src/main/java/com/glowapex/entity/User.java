@@ -17,12 +17,12 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String role; // "USER" or "ADMIN"
+    private Role role;
 
     private boolean active = true;
 
-    // 🔐 OTP-related fields
     @Column(name = "otp")
     private String otp;
 
@@ -57,11 +57,11 @@ public class User {
         this.password = password;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 

@@ -1,62 +1,56 @@
 package com.glowapex.entity;
 
+import lombok.*;
+
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "payments")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder // ✅ This enables Payment.builder()
 public class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "order_id", nullable = false)
+    private String transactionId;
+    private BigDecimal amount;
+    private String currency;
+    private String userEmail;
+    private String source;
+    private String paymentMethod;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus status; // SUCCESS, FAILED, PENDING
+
+    @ManyToOne
+    @JoinColumn(name = "order_id")
     private Order order;
 
-    private String transactionId;
-    private double amount;
-    private LocalDateTime paymentTime = LocalDateTime.now();
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Order getOrder() {
-        return order;
-    }
-
-    public void setOrder(Order order) {
-        this.order = order;
-    }
-
-    public String getTransactionId() {
-        return transactionId;
-    }
-
-    public void setTransactionId(String transactionId) {
-        this.transactionId = transactionId;
-    }
-
-    public double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(double amount) {
-        this.amount = amount;
-    }
-
-    public LocalDateTime getPaymentTime() {
-        return paymentTime;
-    }
-
-    public void setPaymentTime(LocalDateTime paymentTime) {
-        this.paymentTime = paymentTime;
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }

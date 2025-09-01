@@ -1,92 +1,61 @@
 package com.glowapex.entity;
 
+import lombok.*;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
     private String serviceName;
-    private int quantity;
-    private double price;
-    private BigDecimal totalAmount;
-
-    private LocalDateTime orderTime = LocalDateTime.now();
+    private Integer quantity;
+    private BigDecimal price;
+    private String link;
 
     @Enumerated(EnumType.STRING)
-    private OrderStatus status = OrderStatus.PENDING;
+    private OrderStatus status;
 
-    public Long getId() {
-        return id;
-    }
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<Payment> payments;
 
-    public User getUser() {
-        return user;
-    }
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public LocalDateTime getOrderTime() {
-        return orderTime;
-    }
-
-    public void setOrderTime(LocalDateTime orderTime) {
-        this.orderTime = orderTime;
-    }
-
-    public OrderStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(OrderStatus status) {
-        this.status = status;
-    }
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     public BigDecimal getTotalAmount() {
-        return totalAmount;
+        if (price != null && quantity != null) {
+            return price.multiply(BigDecimal.valueOf(quantity));
+        }
+        return BigDecimal.ZERO;
     }
 
-    public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }

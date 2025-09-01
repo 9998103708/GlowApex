@@ -35,18 +35,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
+
             if (jwtUtil.validateToken(token)) {
                 String email = jwtUtil.getEmailFromToken(token);
                 User user = userRepository.findByEmail(email).orElse(null);
+
                 if (user != null) {
-                    UsernamePasswordAuthenticationToken authentication =
+                    // Use plain authority: ADMIN or SUPERADMIN
+                    UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(
                                     user,
                                     null,
-                                    Collections.singletonList(new SimpleGrantedAuthority(user.getRole()))
+                                    Collections.singletonList(
+                                            new SimpleGrantedAuthority(user.getRole().name())
+                                    )
                             );
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             }
         }

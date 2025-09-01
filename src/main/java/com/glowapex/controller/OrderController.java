@@ -1,24 +1,15 @@
 package com.glowapex.controller;
 
 import com.glowapex.dto.OrderRequest;
-import com.glowapex.entity.Order;
-import com.glowapex.entity.OrderStatus;
-import com.glowapex.entity.User;
+import com.glowapex.entity.*;
 import com.glowapex.repository.OrderRepository;
+import com.glowapex.repository.PaymentRepository;
 import com.glowapex.repository.UserRepository;
-import com.glowapex.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.List;
-
 
 @RestController
 @RequestMapping("/api/orders")
@@ -31,84 +22,65 @@ public class OrderController {
     private UserRepository userRepository;
 
     @Autowired
-    private EmailService emailService;
+    private PaymentRepository paymentRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    // ✅ Create a new order
+    @PostMapping
+    public Order createOrder(@RequestBody OrderRequest request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    // ✅ Place Order – Creates user if not exists
-    @PostMapping("/place")
-    public Order placeOrder(@RequestBody OrderRequest request) {
-        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-
-        if (user == null) {
-            user = new User();
-            user.setEmail(request.getEmail());
-            String rawPassword = generateRandomPassword();
-            user.setPassword(passwordEncoder.encode(rawPassword));
-            user.setRole("USER");
-            user = userRepository.save(user);
-            emailService.sendCredentials(request.getEmail(), rawPassword);
-        }
-
-        Order order = new Order();
-        order.setUser(user);
-        order.setServiceName(request.getServiceName());
-        order.setQuantity(request.getQuantity());
-        order.setPrice(request.getPrice());
+        Order order = Order.builder()
+                .user(user)
+                .serviceName(request.getServiceName())
+                .quantity(request.getQuantity())
+                .price(request.getPrice())
+                .link(request.getLink())   // ✅ added link
+                .status(OrderStatus.PENDING) // default status
+                .build();
 
         return orderRepository.save(order);
     }
 
-    // Logged-in USER can view their own orders
-    @PreAuthorize("hasAuthority('USER')")
-    @GetMapping("/myOrder")
-    public List<Order> getUserOrders() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) auth.getPrincipal();
-        return orderRepository.findByUserId(currentUser.getId());
+    // ✅ Get all orders for a user
+    @GetMapping("/user/{userId}")
+    public List<Order> getOrdersByUser(@PathVariable Long userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return orderRepository.findByUserId(userId); // ✅ fixed to userId
     }
 
-    // Admin can view all orders
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/allOrders")
+    // ✅ Admin or SuperAdmin: Get all orders
+    @PreAuthorize("hasAnyAuthority('ADMIN','SUPERADMIN')")
+    @GetMapping
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
 
-    // ✅ Admin can update order status
-    @PutMapping("/update-status/{orderId}")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public Order updateStatus(@PathVariable Long orderId, @RequestParam OrderStatus status) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-        order.setStatus(status);
-        return orderRepository.save(order);
-    }
-
-    // ✅ Authenticated USER or ADMIN can cancel their order
-    @PutMapping("/cancel/{orderId}")
-    @PreAuthorize("isAuthenticated()")
-    public Order cancelOrder(@PathVariable Long orderId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        User currentUser = (User) auth.getPrincipal();
-
+    // ✅ Create a payment for an existing order
+    @PostMapping("/{orderId}/payment")
+    public Payment makePayment(@PathVariable Long orderId, @RequestBody Payment paymentRequest) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        if (!"ADMIN".equals(currentUser.getRole()) && !order.getUser().getId().equals(currentUser.getId())) {
-            throw new AccessDeniedException("You are not allowed to cancel this order.");
+        Payment payment = Payment.builder()
+                .order(order)
+                .userEmail(order.getUser().getEmail())
+                .amount(paymentRequest.getAmount())
+                .paymentMethod(paymentRequest.getPaymentMethod())
+                .source(paymentRequest.getSource())
+                .status(paymentRequest.getStatus() != null ? paymentRequest.getStatus() : PaymentStatus.PENDING)
+                .transactionId(paymentRequest.getTransactionId())
+                .currency(paymentRequest.getCurrency())
+                .build();
+
+        Payment savedPayment = paymentRepository.save(payment);
+
+        if (savedPayment.getStatus() == PaymentStatus.SUCCESS) {
+            order.setStatus(OrderStatus.COMPLETED);
+            orderRepository.save(order);
         }
 
-        order.setStatus(OrderStatus.CANCELLED);
-        return orderRepository.save(order);
-    }
-
-    // ✅ Utility to generate a secure random password
-    private String generateRandomPassword() {
-        byte[] randomBytes = new byte[6];
-        new SecureRandom().nextBytes(randomBytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
+        return savedPayment;
     }
 }

@@ -31,7 +31,13 @@ public class ProviderServiceService {
             service.setServiceName(updatedService.getServiceName());
             service.setDescription(updatedService.getDescription());
             service.setFeatures(updatedService.getFeatures());
-            service.setPackages(updatedService.getPackages());
+
+            // fix for packages
+            service.getPackages().clear();
+            if (updatedService.getPackages() != null) {
+                service.getPackages().addAll(updatedService.getPackages());
+            }
+
             return providerServiceRepository.save(service);
         }).orElse(null);
     }

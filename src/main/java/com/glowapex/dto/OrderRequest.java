@@ -1,12 +1,23 @@
 package com.glowapex.dto;
 
+import java.math.BigDecimal;
+
 public class OrderRequest {
-    private String email;
+    private Long userId;       // ✅ Added userId
+    private String email;      // optional if you want to fetch user via email
     private String serviceName;
     private int quantity;
-    private double price;
+    private BigDecimal price;
+    private String link;       // ✅ Added link
 
     // Getters and Setters
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
     public String getEmail() {
         return email;
@@ -32,11 +43,19 @@ public class OrderRequest {
         this.quantity = quantity;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
     }
 }
