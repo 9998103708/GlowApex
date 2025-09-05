@@ -1,14 +1,29 @@
-# Use a lightweight JDK
-FROM eclipse-temurin:17-jdk-jammy
+# -------------------------------------------------
+# Stage 1: Build the JAR
+# -------------------------------------------------
+FROM maven:3.9.2-eclipse-temurin-17 AS build
 
-# Set working directory
 WORKDIR /app
 
-# Copy the jar built by Maven/Gradle
-COPY target/glow-apex-admin-1.0.0.jar app.jar
+# Copy project files
+COPY pom.xml .
+COPY src ./src
 
-# Expose the port (optional, for documentation)
+# Build JAR (skip tests for faster build)
+RUN mvn clean package -DskipTests
+
+# -------------------------------------------------
+# Stage 2: Run the app
+# -------------------------------------------------
+FROM eclipse-temurin:17-jdk-jammy
+
+WORKDIR /app
+
+# Copy the JAR from build stage
+COPY --from=build /app/target/glow-apex-admin-1.0.0.jar ./app.jar
+
+# Expose port
 EXPOSE 8080
 
-# Run the jar
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+# Run the app
+ENTRYPOINT ["java", "-jar", "app.jar"]
