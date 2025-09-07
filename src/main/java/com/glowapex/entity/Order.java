@@ -1,5 +1,6 @@
 package com.glowapex.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.*;
 
 import javax.persistence.*;
@@ -32,7 +33,9 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
+    // Prevent recursion
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Payment> payments;
 
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -1,5 +1,6 @@
 package com.glowapex.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -14,6 +15,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @JsonIgnore // ✅ hide password in response
     @Column(nullable = false)
     private String password;
 
@@ -23,16 +25,18 @@ public class User {
 
     private boolean active = true;
 
+    @JsonIgnore
     @Column(name = "otp")
     private String otp;
 
+    @JsonIgnore
     @Column(name = "otp_expiry")
     private LocalDateTime otpExpiry;
 
+    @JsonIgnore
     @Column(name = "otp_verified")
     private Boolean otpVerified = false;
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }

@@ -1,5 +1,6 @@
 package com.glowapex.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.*;
 
 import javax.persistence.*;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder // ✅ This enables Payment.builder()
+@Builder
 public class Payment {
 
     @Id
@@ -27,10 +28,11 @@ public class Payment {
     private String paymentMethod;
 
     @Enumerated(EnumType.STRING)
-    private PaymentStatus status; // SUCCESS, FAILED, PENDING
+    private PaymentStatus status;
 
     @ManyToOne
     @JoinColumn(name = "order_id")
+    @JsonBackReference // ✅ prevent infinite loop
     private Order order;
 
     @ManyToOne

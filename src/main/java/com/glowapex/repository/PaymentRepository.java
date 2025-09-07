@@ -11,16 +11,24 @@ import java.util.List;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
+    // 🔹 Find payments by user email
     List<Payment> findByUserEmail(String email);
 
+    // 🔹 Find payments for an order
     @Query("SELECT p FROM Payment p WHERE p.order.id = :orderId")
     List<Payment> findByOrderId(@Param("orderId") Long orderId);
 
-    // ✅ Count by status & date range
+    // 🔹 Find payments by status
+    List<Payment> findByStatus(PaymentStatus status);
+
+    // 🔹 Count by status in a date range
     long countByStatusAndCreatedAtBetween(PaymentStatus status, LocalDateTime start, LocalDateTime end);
 
-    // ✅ Sum amount by status & currency
-    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p WHERE p.status = :status AND p.currency = :currency AND p.createdAt BETWEEN :start AND :end")
+    // 🔹 Sum amount by status & currency in a date range
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p " +
+            "WHERE p.status = :status " +
+            "AND p.currency = :currency " +
+            "AND p.createdAt BETWEEN :start AND :end")
     Double sumAmountByStatusAndCurrency(@Param("status") PaymentStatus status,
                                         @Param("currency") String currency,
                                         @Param("start") LocalDateTime start,
