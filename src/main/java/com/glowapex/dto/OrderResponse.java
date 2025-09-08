@@ -1,6 +1,7 @@
 package com.glowapex.dto;
 
 import com.glowapex.entity.OrderStatus;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,36 +20,91 @@ public class OrderResponse {
     private List<PaymentResponse> payments; // ✅ Added payments list
 
     // Getters & Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getServiceName() { return serviceName; }
-    public void setServiceName(String serviceName) { this.serviceName = serviceName; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public int getQuantity() { return quantity; }
-    public void setQuantity(int quantity) { this.quantity = quantity; }
+    public String getServiceName() {
+        return serviceName;
+    }
 
-    public BigDecimal getPrice() { return price; }
-    public void setPrice(BigDecimal price) { this.price = price; }
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
 
-    public String getLink() { return link; }
-    public void setLink(String link) { this.link = link; }
+    public int getQuantity() {
+        return quantity;
+    }
 
-    public OrderStatus getStatus() { return status; }
-    public void setStatus(OrderStatus status) { this.status = status; }
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public BigDecimal getPrice() {
+        return price;
+    }
 
-    public String getUserEmail() { return userEmail; }
-    public void setUserEmail(String userEmail) { this.userEmail = userEmail; }
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public String getLink() {
+        return link;
+    }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public void setLink(String link) {
+        this.link = link;
+    }
 
-    public List<PaymentResponse> getPayments() { return payments; }
-    public void setPayments(List<PaymentResponse> payments) { this.payments = payments; }
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public List<PaymentResponse> getPayments() {
+        return payments;
+    }
+
+    public void setPayments(List<PaymentResponse> payments) {
+        this.payments = payments;
+    }
 }

@@ -9,7 +9,10 @@ import java.util.List;
 
 public interface OrderService {
     OrderResponse createOrder(OrderRequest request);
+
     List<OrderResponse> getOrdersByUser(Long userId);
+
     List<OrderResponse> getAllOrders();
+
     PaymentResponse makePayment(Long orderId, PaymentRequest request);
 }
