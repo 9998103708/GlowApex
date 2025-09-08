@@ -27,15 +27,18 @@ public class OrderMapper {
         response.setStatus(order.getStatus());
         response.setCreatedAt(order.getCreatedAt());
         response.setUpdatedAt(order.getUpdatedAt());
+
         if (order.getUser() != null) {
             response.setUserId(order.getUser().getId());
             response.setUserEmail(order.getUser().getEmail());
         }
+
         if (order.getPayments() != null) {
             response.setPayments(order.getPayments().stream()
                     .map(PaymentMapper::toResponse)
                     .collect(Collectors.toList()));
         }
+
         return response;
     }
 }

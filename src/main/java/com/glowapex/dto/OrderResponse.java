@@ -17,7 +17,10 @@ public class OrderResponse {
     private String userEmail;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private List<PaymentResponse> payments; // ✅ Added payments list
+    private List<PaymentResponse> payments;
+
+    // ✅ New field for newly created user
+    private UserProfileDTO newUser;
 
     // Getters & Setters
     public Long getId() {
@@ -106,5 +109,13 @@ public class OrderResponse {
 
     public void setPayments(List<PaymentResponse> payments) {
         this.payments = payments;
+    }
+
+    public UserProfileDTO getNewUser() {
+        return newUser;
+    }
+
+    public void setNewUser(UserProfileDTO newUser) {
+        this.newUser = newUser;
     }
 }

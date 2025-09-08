@@ -1,9 +1,6 @@
 package com.glowapex.service.impl;
 
-import com.glowapex.dto.OrderRequest;
-import com.glowapex.dto.OrderResponse;
-import com.glowapex.dto.PaymentRequest;
-import com.glowapex.dto.PaymentResponse;
+import com.glowapex.dto.*;
 import com.glowapex.entity.*;
 import com.glowapex.mapper.OrderMapper;
 import com.glowapex.mapper.PaymentMapper;
@@ -44,6 +41,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse createOrder(OrderRequest request) {
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        UserProfileDTO newUserProfile = null; // ✅ track if new user created
 
         if (user == null) {
             user = new User();
@@ -55,6 +53,10 @@ public class OrderServiceImpl implements OrderService {
 
             user = userRepository.save(user);
 
+            // ✅ convert to DTO so we can return in response
+            newUserProfile = new UserProfileDTO(user.getId(), user.getEmail(), user.getRole().name());
+
+            // Send credentials via email
             emailService.sendCredentials(request.getEmail(), rawPassword);
         }
 
@@ -67,7 +69,15 @@ public class OrderServiceImpl implements OrderService {
 
         order = orderRepository.save(order);
 
-        return OrderMapper.toResponse(order);
+        // ✅ map order -> response
+        OrderResponse response = OrderMapper.toResponse(order);
+
+        // ✅ if new user created, attach it
+        if (newUserProfile != null) {
+            response.setNewUser(newUserProfile);
+        }
+
+        return response;
     }
 
     /**
@@ -83,6 +93,7 @@ public class OrderServiceImpl implements OrderService {
         }
         return sb.toString();
     }
+
 
     @Override
     public List<OrderResponse> getOrdersByUser(Long userId) {
