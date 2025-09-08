@@ -1,21 +1,12 @@
 package com.glowapex.mapper;
 
-import com.glowapex.dto.OrderRequest;
 import com.glowapex.dto.OrderResponse;
 import com.glowapex.entity.Order;
+import com.glowapex.entity.OrderStatus;
 
 import java.util.stream.Collectors;
 
 public class OrderMapper {
-
-    public static Order toEntity(OrderRequest request) {
-        Order order = new Order();
-        order.setServiceName(request.getServiceName());
-        order.setQuantity(request.getQuantity());
-        order.setPrice(request.getPrice());
-        order.setLink(request.getLink());
-        return order;
-    }
 
     public static OrderResponse toResponse(Order order) {
         OrderResponse response = new OrderResponse();
@@ -24,7 +15,8 @@ public class OrderMapper {
         response.setQuantity(order.getQuantity());
         response.setPrice(order.getPrice());
         response.setLink(order.getLink());
-        response.setStatus(order.getStatus());
+        // ✅ Default status to PENDING if null
+        response.setStatus(order.getStatus() != null ? order.getStatus() : OrderStatus.PENDING);
         response.setCreatedAt(order.getCreatedAt());
         response.setUpdatedAt(order.getUpdatedAt());
 

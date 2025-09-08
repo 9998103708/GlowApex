@@ -4,6 +4,7 @@ import com.glowapex.dto.OrderRequest;
 import com.glowapex.dto.OrderResponse;
 import com.glowapex.dto.PaymentRequest;
 import com.glowapex.dto.PaymentResponse;
+import com.glowapex.entity.OrderStatus;
 import com.glowapex.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,5 +38,12 @@ public class OrderController {
     @PostMapping("/{orderId}/payment")
     public PaymentResponse makePayment(@PathVariable Long orderId, @RequestBody PaymentRequest request) {
         return orderService.makePayment(orderId, request);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN','SUPERADMIN')")
+    @PutMapping("/{orderId}/status")
+    public OrderResponse updateOrderStatus(@PathVariable Long orderId,
+                                           @RequestParam OrderStatus status) {
+        return orderService.updateOrderStatus(orderId, status);
     }
 }

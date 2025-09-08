@@ -41,7 +41,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse createOrder(OrderRequest request) {
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-        UserProfileDTO newUserProfile = null; // ✅ track if new user created
+        UserProfileDTO newUserProfile = null;
 
         if (user == null) {
             user = new User();
@@ -53,10 +53,9 @@ public class OrderServiceImpl implements OrderService {
 
             user = userRepository.save(user);
 
-            // ✅ convert to DTO so we can return in response
             newUserProfile = new UserProfileDTO(user.getId(), user.getEmail(), user.getRole().name());
 
-            // Send credentials via email
+            // Send temporary credentials via email
             emailService.sendCredentials(request.getEmail(), rawPassword);
         }
 
@@ -66,13 +65,13 @@ public class OrderServiceImpl implements OrderService {
         order.setQuantity(request.getQuantity());
         order.setPrice(request.getPrice());
         order.setLink(request.getLink());
+        // ✅ Default order status to PENDING
+        order.setStatus(OrderStatus.PENDING);
 
         order = orderRepository.save(order);
 
-        // ✅ map order -> response
         OrderResponse response = OrderMapper.toResponse(order);
 
-        // ✅ if new user created, attach it
         if (newUserProfile != null) {
             response.setNewUser(newUserProfile);
         }
@@ -133,5 +132,16 @@ public class OrderServiceImpl implements OrderService {
         payment = paymentRepository.save(payment);
 
         return PaymentMapper.toResponse(payment);
+    }
+
+    @Override
+    public OrderResponse updateOrderStatus(Long orderId, OrderStatus status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        order.setStatus(status); // Update status (e.g., PENDING → COMPLETED)
+        order = orderRepository.save(order);
+
+        return OrderMapper.toResponse(order);
     }
 }
