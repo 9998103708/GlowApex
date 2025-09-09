@@ -24,6 +24,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     // 🔹 Count by status in a date range
     long countByStatusAndCreatedAtBetween(PaymentStatus status, LocalDateTime start, LocalDateTime end);
 
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
     // 🔹 Sum amount by status & currency in a date range
     @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p " +
             "WHERE p.status = :status " +
